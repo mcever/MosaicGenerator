@@ -2,8 +2,15 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-img1 = cv2.imread('gonzalez1.png', 0)
-img2 = cv2.imread('gonzalez2.png', 0)
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("img1", default="")
+parser.add_argument("img2", default="")
+args = parser.parse_args()
+
+img1 = cv2.imread(args.img1, 0)
+img2 = cv2.imread(args.img2, 0)
 
 sift = cv2.xfeatures2d.SIFT_create()
 
@@ -53,14 +60,11 @@ for i in range(0, 4):
     U, s, V = np.linalg.svd(A, full_matrices=True)
     matrix = V[:, 8].reshape(3, 3).transpose()
 
-
-
 for i in range(0, 3):
     for j in range(0, 3):
         matrix[i][j] /= matrix[2][2];
 
 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0);
-
 
 img3 = cv2.drawMatches(img1, kp1, img2, kp2, good, None, flags=2)
 
