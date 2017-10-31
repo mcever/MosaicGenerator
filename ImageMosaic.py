@@ -1,5 +1,6 @@
 from ImageProcessor import ImageProcessor
 import argparse
+import cv2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("img1", default="")
