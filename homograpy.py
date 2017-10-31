@@ -9,8 +9,11 @@ parser.add_argument("img1", default="")
 parser.add_argument("img2", default="")
 args = parser.parse_args()
 
-img1 = cv2.imread(args.img1, 0)
-img2 = cv2.imread(args.img2, 0)
+f1 = "imgs/project1_files/images/drawer1.png"
+f2 = "imgs/project1_files/images/drawer2.png"
+
+img1 = cv2.imread(f1, 0)
+img2 = cv2.imread(f2, 0)
 
 sift = cv2.xfeatures2d.SIFT_create()
 
@@ -33,22 +36,20 @@ for m in good:
     (kp1[m.queryIdx].size/kp2[m.trainIdx].size < 1.3)):
         very_good.append(m)
 
-src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
-
-p1 = []
+# break the matches into two lists with corresponding pairs
+p1 = [] # p1[0] matches p2[0]
 p2 = []
 for m in very_good:
     p1.append([kp1[m.queryIdx].pt[0], kp1[m.queryIdx].pt[1]])
     p2.append([kp2[m.trainIdx].pt[0], kp2[m.trainIdx].pt[1]])
 
+# Perform DLT to generate homography
 matrixIndex = 0
 A = np.zeros((8, 9))
 
 for i in range(0, 4):
     x = p1[i][0]
     y = p1[i][1]
-
     u = p2[i][0]
     v = p2[i][1]
 
@@ -64,8 +65,16 @@ for i in range(0, 3):
     for j in range(0, 3):
         matrix[i][j] /= matrix[2][2];
 
+# use RANSAC to compute homography
+src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
 M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0);
 
 img3 = cv2.drawMatches(img1, kp1, img2, kp2, good, None, flags=2)
 
-plt.imshow(img3),plt.show()
+result = cv2.warpPerspective(img1, M,
+    (img1.shape[1] + img2.shape[1], img1.shape[0]))
+result[0:img2.shape[0], 0:img2.shape[1]] = img2
+
+plt.imshow(result)
+plt.show()
