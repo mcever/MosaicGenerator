@@ -7,6 +7,7 @@ import numpy as np
 import pdb
 import math
 
+
 class ImageProcessor:
     def __init__(self):
         pass
@@ -131,8 +132,8 @@ class ImageProcessor:
 
     def Mosaic(self, img1, img2):
         # resize to make faster
-        #img1 = imutils.resize(img1, width=400)
-        #img2 = imutils.resize(img2, width=400)
+        img1 = imutils.resize(img1, width=400)
+        img2 = imutils.resize(img2, width=400)
 
         # detect keypoints by SIFT
         sift = cv2.xfeatures2d.SIFT_create()
@@ -146,12 +147,16 @@ class ImageProcessor:
 
         # use RANSAC to compute homograpy
         H = self.RANSAC(matches, kp1, kp2)
-        img3 = cv2.warpPerspective(img1, H, (600,600))
-        result = self.mix_and_match(img1, img3)
+        #img3 = cv2.warpPerspective(img1, H, (600,600))
+        #result = self.mix_and_match(img1, img3)
+
 
         # stitch the images together and display
+        result = cv2.warpPerspective(img1, H, (img1.shape[1] + img2.shape[1], img1.shape[0]))
+        result[0:img2.shape[0], 0:img2.shape[1]] = img2
 
         cv2.imshow("title", result)
+        #cv2.imwrite("result.jpg", result)
         cv2.waitKey(0)
 
 
