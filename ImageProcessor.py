@@ -116,6 +116,7 @@ class ImageProcessor:
             img3 = cv2.warpPerspective(img1, DLT_H, (1000,1000))
             plt.title("DLT")
             plt.imshow(img3)
+            #plt.imsave("Gonazlez-DLT.jpg", img3)
             plt.show()
         if usenDLT:
             nDLT_H = self.nDLT(matches, kp1, kp2)
@@ -123,12 +124,14 @@ class ImageProcessor:
             plt.title("nDLT")
             plt.imshow(img3)
             plt.show() #title="nDLT"
+            #plt.imsave("Gonazlez-nDLT.jpg", img3)
         if useRANSAC:
             R_H = self.RANSAC(matches, kp1, kp2)
             img3 = cv2.warpPerspective(img1, R_H, (1000,1000))
             plt.title("RANSAC")
             plt.imshow(img3)
             plt.show() #title="RANSAC"
+            #plt.imsave("Gonazlez-RANSAC.jpg", img3)
 
     def Mosaic(self, img1, img2):
         # resize to make faster
@@ -156,7 +159,7 @@ class ImageProcessor:
         result[0:img2.shape[0], 0:img2.shape[1]] = img2
 
         cv2.imshow("title", result)
-        #cv2.imwrite("result.jpg", result)
+        cv2.imwrite("result.jpg", result)
         cv2.waitKey(0)
 
 
