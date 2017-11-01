@@ -111,7 +111,10 @@ class ImageProcessor:
 
         if showMatches:
             img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=2)
-
+            plt.title("Matches")
+            plt.imshow(img3)
+            plt.imsave("Gonazlez-Matches.jpg", img3)
+            plt.show()
         if useDLT:
             DLT_H = self.DLT(matches, kp1, kp2)
             img3 = cv2.warpPerspective(img1, DLT_H, (1000,1000))
