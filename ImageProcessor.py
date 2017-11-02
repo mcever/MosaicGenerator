@@ -95,6 +95,7 @@ class ImageProcessor:
         # resize to make faster
         #img1 = imutils.resize(img1, width=400)
         #img2 = imutils.resize(img2, width=400)
+        # accepts black and white images
         img1 = cv2.cvtColor(img1, cv2.COLOR_GRAY2RGB)
         img2 = cv2.cvtColor(img2, cv2.COLOR_GRAY2RGB)
 
@@ -110,7 +111,10 @@ class ImageProcessor:
 
         if showMatches:
             img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, flags=2)
-
+            plt.title("Matches")
+            plt.imshow(img3)
+            plt.imsave("Gonazlez-Matches.jpg", img3)
+            plt.show()
         if useDLT:
             DLT_H = self.DLT(matches, kp1, kp2)
             img3 = cv2.warpPerspective(img1, DLT_H, (1000,1000))
@@ -133,7 +137,7 @@ class ImageProcessor:
             plt.show() #title="RANSAC"
             #plt.imsave("Gonazlez-RANSAC.jpg", img3)
 
-    def Mosaic(self, img1, img2):
+    def old_Mosaic(self, img1, img2):
         # resize to make faster
         img1 = imutils.resize(img1, width=400)
         img2 = imutils.resize(img2, width=400)
@@ -150,18 +154,56 @@ class ImageProcessor:
 
         # use RANSAC to compute homograpy
         H = self.RANSAC(matches, kp1, kp2)
-        #img3 = cv2.warpPerspective(img1, H, (600,600))
+        img3 = cv2.warpPerspective(img1, H, (600,600))
         #result = self.mix_and_match(img1, img3)
 
 
         # stitch the images together and display
-        result = cv2.warpPerspective(img1, H, (img1.shape[1] + img2.shape[1], img1.shape[0]))
-        result[0:img2.shape[0], 0:img2.shape[1]] = img2
+        result = self.Stitch()
 
         cv2.imshow("title", result)
         cv2.imwrite("result.jpg", result)
         cv2.waitKey(0)
 
+    def Mosaic(self, img1, img2):
+        # accepts color images
+        # stitch im1 to img2
+        img1 = img1
+        img2 = img2
+        img_2 = img2
+        T = np.float32([[1, 0, 1000], [0, 1, 1000]])
+
+        gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.warpAffine(gray2, T, (3000, 3000))
+        img2 = cv2.warpAffine(img2, T, (3000, 3000))
+
+        sift = cv2.xfeatures2d.SIFT_create()
+
+        kp1, des1 = sift.detectAndCompute(gray1, None)
+        kp2, des2 = sift.detectAndCompute(gray2, None)
+
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(des1, des2, k=2)
+
+        good = []
+
+        for m, n in matches:
+            if m.distance < 0.50*n.distance:
+                good.append(m)
+
+        src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+        dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+
+        result = cv2.warpPerspective(img1, M, (3000, 3000))
+
+        for i in range(1000, 1000+img_2.shape[0]):
+            for j in range(1000, 1000+img_2.shape[1]):
+                result[i, j] = img_2[i-1000, j-1000]
+
+        return result
 
     def FLANN_stuff():
         FLANN_INDEX_KDTREE = 1
