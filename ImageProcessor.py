@@ -171,12 +171,12 @@ class ImageProcessor:
         img1 = img1
         img2 = img2
         img_2 = img2
-        T = np.float32([[1, 0, 1000], [0, 1, 1000]])
+        T = np.float32([[1, 0, 2000], [0, 1, 2000]])
 
         gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-        gray2 = cv2.warpAffine(gray2, T, (3000, 3000))
-        img2 = cv2.warpAffine(img2, T, (3000, 3000))
+        gray2 = cv2.warpAffine(gray2, T, (6000, 6000))
+        img2 = cv2.warpAffine(img2, T, (6000, 6000))
 
         sift = cv2.xfeatures2d.SIFT_create()
 
@@ -197,11 +197,11 @@ class ImageProcessor:
 
         M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
-        result = cv2.warpPerspective(img1, M, (3000, 3000))
+        result = cv2.warpPerspective(img1, M, (6000, 6000))
 
-        for i in range(1000, 1000+img_2.shape[0]):
-            for j in range(1000, 1000+img_2.shape[1]):
-                result[i, j] = img_2[i-1000, j-1000]
+        for i in range(2000, 2000+img_2.shape[0]):
+            for j in range(2000, 2000+img_2.shape[1]):
+                result[i, j] = img_2[i-2000, j-2000]
 
         return result
 
